@@ -79,12 +79,12 @@
 	"configuration_version":"3.0",
 	"appInfos":[
 		{
-			"package_name":"com.domestic.marina",
+			"package_name":"com.domestic.marinamoda",
 			"client":{
 				"app_id":"112353073"
 			},
 			"app_info":{
-				"package_name":"com.domestic.marina",
+				"package_name":"com.domestic.marinamoda",
 				"app_id":"112353073"
 			},
 			"oauth_client":{
