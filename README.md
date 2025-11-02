@@ -128,8 +128,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Main Platform**: [Marina.Moda](https://marina.rechain.network)
-- **Admin Panel**: [Admin Marina](https://domestic.rechain.network)
+- **Main Platform**: [Marina.Moda](https://bemusic.1.vebto.com/)
+- **Admin Panel**: [Admin Marina](https://bemusic.2.vebto.com/)
 - **Documentation**: [Wiki](MarinaModaWiki.md)
 - **Issues**: [GitHub Issues](https://github.com/sorydima/Marina.Moda-/issues)
 
@@ -137,13 +137,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Dmitry Sorokin Production**
 
-- **Email**: support@rechain.network
+- **Email**: support@marinchik.ink
 - **Response Time**: 1-5 business days
 
 ## 🙏 Acknowledgments
 
 - Built with ❤️ by the Marina.Moda® team
-- Powered by [REChain](https://rechain.network)
+- Powered by [REChain]()
 - Community-driven development
 
 ---
