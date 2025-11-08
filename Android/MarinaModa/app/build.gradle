@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.domestic.marina"
+    namespace "com.domestic.marinamoda"
     compileSdk 35
 	defaultConfig {
-		applicationId 'com.domestic.marina'
+		applicationId 'com.domestic.marinamoda'
         minSdk 21
         targetSdk 35
-		versionCode 14
-		versionName '14'
+		versionCode 15
+		versionName '15'
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 		multiDexEnabled true
 	}

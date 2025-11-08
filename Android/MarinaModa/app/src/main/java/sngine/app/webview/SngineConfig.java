@@ -5,7 +5,7 @@ class SngineConfig {
     /* -- CONFIG VARIABLES -- */
 
     //complete URL of your Sngine website
-    static String Sngine_URL = "https://marina.rechain.network/";
+    static String Sngine_URL = "https://bemusic.1.vebto.com/";
 
     // OneSignal APP Id
     static String Sngine_ONESIGNAL_APP_ID = "";
