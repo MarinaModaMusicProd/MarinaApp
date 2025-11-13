@@ -4,15 +4,15 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.domestic.marina",
+  "applicationId": "com.domestic.marinamoda",
   "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 15,
-      "versionName": "15",
+      "versionCode": 16,
+      "versionName": "16",
       "outputFile": "app-release.apk"
     }
   ],
