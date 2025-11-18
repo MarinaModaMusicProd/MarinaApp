@@ -42,7 +42,7 @@ class SngineConfig {
     static boolean SngineApp_PBAR = true;
 
     // zoom control for webpages view
-    static boolean SngineApp_ZOOM = false;
+    static boolean SngineApp_ZOOM = true;
 
     // save form cache and auto-fill information
     static boolean SngineApp_SFORM = false;
@@ -52,6 +52,24 @@ class SngineConfig {
 
     // open external url with default browser instead of app webview
     static boolean SngineApp_EXTURL = false;
+
+    // enable offline caching
+    static boolean SngineApp_OFFLINE_CACHE = true;
+
+    // enable biometric authentication
+    static boolean SngineApp_BIOMETRIC = true;
+
+    // enable dark mode support
+    static boolean SngineApp_DARK_MODE = true;
+
+    // enable background audio playback
+    static boolean SngineApp_BACKGROUND_AUDIO = true;
+
+    // enable crash reporting
+    static boolean SngineApp_CRASH_REPORTING = true;
+
+    // enable performance monitoring
+    static boolean SngineApp_PERFORMANCE_MONITORING = true;
 
 
     /* -- SECURITY VARIABLES -- */

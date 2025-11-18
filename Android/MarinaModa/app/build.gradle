@@ -7,8 +7,8 @@ android {
 		applicationId 'com.domestic.marinamoda'
         minSdk 21
         targetSdk 35
-		versionCode 16
-		versionName '16'
+		versionCode 17
+		versionName '17'
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 		multiDexEnabled true
 	}
@@ -34,7 +34,25 @@ dependencies {
 	implementation 'com.google.android.gms:play-services-location:21.3.0'
 
 	// OneSignal SDK
-	implementation 'com.onesignal:OneSignal:[5.0.0, 5.99.99]'
+	implementation 'com.onesignal:OneSignal:4.8.5'
+
+	// Firebase Crashlytics and Analytics
+	implementation 'com.google.firebase:firebase-crashlytics:18.6.4'
+	implementation 'com.google.firebase:firebase-analytics:21.6.2'
+
+	// Google Play Billing
+	implementation 'com.android.billingclient:billing:6.2.1'
+
+	// Biometric Authentication
+	implementation 'androidx.biometric:biometric:1.1.0'
+
+	// OkHttp for caching
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+	// Media Session for background audio
+	implementation 'androidx.media:media:1.7.0'
 }
 
 apply plugin: 'com.huawei.agconnect'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'

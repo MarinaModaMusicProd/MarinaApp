@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Marina</string>
+    <string name="image_view">Vue d\'Image</string>
+    <string name="sngine_demo">com.domestic.marinamoda</string>
+    <string name="rate_dialog_title">Évaluer</string>
+    <string name="rate_dialog_message">Si vous aimez notre app, voudriez-vous prendre un moment pour l\'évaluer ? Cela ne prendra pas plus d\'une minute. Merci !</string>
+    <string name="rate_dialog_ok">ÉVALUER</string>
+    <string name="rate_dialog_cancel">PLUS TARD</string>
+    <string name="rate_dialog_no">NE PLUS DEMANDER</string>
+    <string name="loc_fail">Échec de Localisation</string>
+    <string name="loc_fail_text">Veuillez vérifier votre position GPS.</string>
+    <string name="loc_fail_more">Veuillez vérifier si votre GPS est activé, sinon, veuillez le régler sur haute précision dans les paramètres de localisation.</string>
+    <string name="loc_perm">Autoriser la Permission de Localisation</string>
+    <string name="loc_perm_text">Donnez à cette app la permission de vérifier votre position.</string>
+    <string name="loc_perm_more">Veuillez autoriser cette app à connaître votre position pour une meilleure expérience globale.</string>
+    <string name="dl_downloading">Téléchargement du fichier…</string>
+    <string name="dl_downloading2">Téléchargement du Fichier</string>
+    <string name="fl_chooser">Sélecteur de Fichiers</string>
+    <string name="went_wrong">Quelque Chose s\'est Mal Passé !</string>
+    <string name="check_connection">Veuillez vérifier votre Connexion Réseau !</string>
+    <string name="share_w_friends">Partager avec vos Amis</string>
+</resources>

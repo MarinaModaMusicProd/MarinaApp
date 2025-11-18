@@ -45,6 +45,9 @@ import android.webkit.SslErrorHandler;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -54,17 +57,46 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+import androidx.biometric.BiometricPrompt;
+import androidx.biometric.BiometricManager;
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
+import androidx.media.session.MediaButtonReceiver;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import java.util.Locale;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.onesignal.OneSignal;
-import com.onesignal.debug.LogLevel;
 import com.onesignal.Continue;
+import com.onesignal.notifications.INotificationClickEvent;
+import com.onesignal.notifications.INotificationClickListener;
+import com.onesignal.notifications.INotificationReceivedEvent;
+import com.onesignal.notifications.INotificationWillShowInForegroundHandler;
+import com.onesignal.notifications.INotificationWillShowInForegroundEvent;
+import com.onesignal.notifications.INotificationReceivedHandler;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -82,6 +114,12 @@ public class MainActivity extends AppCompatActivity {
     static boolean SngineApp_SFORM = SngineConfig.SngineApp_SFORM;
     static boolean SngineApp_OFFLINE = SngineConfig.SngineApp_OFFLINE;
     static boolean SngineApp_EXTURL = SngineConfig.SngineApp_EXTURL;
+    static boolean SngineApp_OFFLINE_CACHE = SngineConfig.SngineApp_OFFLINE_CACHE;
+    static boolean SngineApp_BIOMETRIC = SngineConfig.SngineApp_BIOMETRIC;
+    static boolean SngineApp_DARK_MODE = SngineConfig.SngineApp_DARK_MODE;
+    static boolean SngineApp_BACKGROUND_AUDIO = SngineConfig.SngineApp_BACKGROUND_AUDIO;
+    static boolean SngineApp_CRASH_REPORTING = SngineConfig.SngineApp_CRASH_REPORTING;
+    static boolean SngineApp_PERFORMANCE_MONITORING = SngineConfig.SngineApp_PERFORMANCE_MONITORING;
 
     //Security variables
     static boolean SngineApp_CERT_VERIFICATION = SngineConfig.SngineApp_CERT_VERIFICATION;
@@ -105,6 +143,12 @@ public class MainActivity extends AppCompatActivity {
     NotificationManager swvp_notification;
     Notification swvp_notification_new;
 
+    // Fullscreen video support
+    private View mCustomView;
+    private WebChromeClient.CustomViewCallback mCustomViewCallback;
+    private int mOriginalOrientation;
+    private int mOriginalSystemUiVisibility;
+
     private String swvp_cam_message;
     private ValueCallback<Uri> swvp_file_message;
     private ValueCallback<Uri[]> swvp_file_path;
@@ -116,6 +160,13 @@ public class MainActivity extends AppCompatActivity {
     private SecureRandom random = new SecureRandom();
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    // Additional variables for new features
+    private OkHttpClient okHttpClient;
+    private BillingClient billingClient;
+    private BiometricPrompt biometricPrompt;
+    private MediaSessionCompat mediaSession;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -168,6 +219,42 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Firebase Crashlytics initialization
+        if (SngineApp_CRASH_REPORTING) {
+            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true);
+        }
+
+        // Firebase Analytics initialization
+        if (SngineApp_PERFORMANCE_MONITORING) {
+            FirebaseAnalytics.getInstance(this);
+        }
+
+        // Offline Caching Setup
+        if (SngineApp_OFFLINE_CACHE) {
+            setupOfflineCaching();
+        }
+
+        // Biometric Authentication Setup
+        if (SngineApp_BIOMETRIC) {
+            setupBiometricAuthentication();
+        }
+
+        // In-App Purchases Setup
+        setupInAppPurchases();
+
+        // Dark Mode Setup
+        if (SngineApp_DARK_MODE) {
+            setupDarkMode();
+        }
+
+        // Background Audio Setup
+        if (SngineApp_BACKGROUND_AUDIO) {
+            setupBackgroundAudio();
+        }
+
+        // Multi-language Support Setup
+        setupMultiLanguageSupport();
+
         // OneSignal Initialization
         if(!Objects.equals(Sngine_ONESIGNAL_APP_ID, "")) {
         OneSignal.initWithContext(this, Sngine_ONESIGNAL_APP_ID);
@@ -178,6 +265,39 @@ public class MainActivity extends AppCompatActivity {
 
         // Get OneSignal user ID
         oneSignalUserID = OneSignal.getUser().getPushSubscription().getId();
+
+        // Set up notification listeners for enhanced push notifications
+        OneSignal.getNotifications().addClickListener(new INotificationClickListener() {
+            @Override
+            public void onClick(INotificationClickEvent event) {
+                String actionId = event.getResult().getActionId();
+                String url = event.getResult().getUrl();
+                if (url != null && !url.isEmpty()) {
+                    // Handle deep linking
+                    if (url.startsWith("sngine://")) {
+                        url = url.replace("sngine://", Sngine_URL);
+                    }
+                    aswm_view(url, false);
+                }
+                Log.d(TAG, "Notification clicked with action: " + actionId);
+            }
+        });
+
+        OneSignal.getNotifications().addNotificationWillShowInForegroundHandler(new INotificationWillShowInForegroundHandler() {
+            @Override
+            public void onWillShowInForeground(INotificationWillShowInForegroundEvent event) {
+                Log.d(TAG, "Notification will display: " + event.getNotification().getTitle());
+                // Custom handling before notification is displayed
+            }
+        });
+
+        OneSignal.getNotifications().addNotificationReceivedHandler(new INotificationReceivedHandler() {
+            @Override
+            public void onNotificationReceived(INotificationReceivedEvent event) {
+                Log.d(TAG, "Notification received: " + event.getNotification().getTitle());
+                // Custom handling for received notifications
+            }
+        });
         }
 
         Intent intent = getIntent();
@@ -299,6 +419,9 @@ public class MainActivity extends AppCompatActivity {
         swvp_view.setVerticalScrollBarEnabled(false);
         swvp_view.setWebViewClient(new Callback());
 
+        // Add JavaScript interface for device sensors and native operations
+        swvp_view.addJavascriptInterface(new JSInterface(this), "Android");
+
         //Rendering the default URL
         aswm_view(Sngine_URL, false);
 
@@ -311,6 +434,48 @@ public class MainActivity extends AppCompatActivity {
         swvp_view.setWebChromeClient(new WebChromeClient() {
             public void onPermissionRequest(final PermissionRequest request) {
                 request.grant(request.getResources());
+            }
+
+            // Fullscreen video support
+            @Override
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                if (mCustomView != null) {
+                    onHideCustomView();
+                    return;
+                }
+                mCustomView = view;
+                mOriginalSystemUiVisibility = getWindow().getDecorView().getSystemUiVisibility();
+                mOriginalOrientation = getRequestedOrientation();
+                mCustomViewCallback = callback;
+                FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+                decor.addView(mCustomView, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE);
+                setRequestedOrientation(mOriginalOrientation);
+                mCustomView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onHideCustomView() {
+                if (mCustomView == null) {
+                    return;
+                }
+                FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+                decor.removeView(mCustomView);
+                mCustomView = null;
+                getWindow().getDecorView().setSystemUiVisibility(mOriginalSystemUiVisibility);
+                setRequestedOrientation(mOriginalOrientation);
+                if (mCustomViewCallback != null) {
+                    mCustomViewCallback.onCustomViewHidden();
+                }
+                mCustomViewCallback = null;
             }
 
             //Handling input[type="file"]
@@ -772,5 +937,166 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         swvp_view.restoreState(savedInstanceState);
+    }
+
+    // Offline Caching Setup
+    private void setupOfflineCaching() {
+        try {
+            File cacheDir = new File(getCacheDir(), "okhttp");
+            long cacheSize = 10 * 1024 * 1024; // 10 MB
+            Cache cache = new Cache(cacheDir, cacheSize);
+            okHttpClient = new OkHttpClient.Builder()
+                    .cache(cache)
+                    .build();
+            Log.d(TAG, "Offline caching setup completed");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to setup offline caching", e);
+        }
+    }
+
+    // Biometric Authentication Setup
+    private void setupBiometricAuthentication() {
+        BiometricManager biometricManager = BiometricManager.from(this);
+        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS) {
+            Executor executor = Executors.newSingleThreadExecutor();
+            biometricPrompt = new BiometricPrompt(this, executor, new BiometricPrompt.AuthenticationCallback() {
+                @Override
+                public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                    super.onAuthenticationSucceeded(result);
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Authentication succeeded", Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onAuthenticationFailed() {
+                    super.onAuthenticationFailed();
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show());
+                }
+            });
+            Log.d(TAG, "Biometric authentication setup completed");
+        } else {
+            Log.w(TAG, "Biometric authentication not available");
+        }
+    }
+
+    // In-App Purchases Setup
+    private void setupInAppPurchases() {
+        billingClient = BillingClient.newBuilder(this)
+                .setListener((billingResult, purchases) -> {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
+                        for (Purchase purchase : purchases) {
+                            handlePurchase(purchase);
+                        }
+                    }
+                })
+                .enablePendingPurchases()
+                .build();
+
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    Log.d(TAG, "Billing client setup completed");
+                } else {
+                    Log.e(TAG, "Billing client setup failed: " + billingResult.getDebugMessage());
+                }
+            }
+
+            @Override
+            public void onBillingServiceDisconnected() {
+                Log.w(TAG, "Billing service disconnected");
+            }
+        });
+    }
+
+    // Dark Mode Setup
+    private void setupDarkMode() {
+        sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isDarkMode = sharedPreferences.getBoolean("dark_mode", false);
+        applyDarkMode(isDarkMode);
+        Log.d(TAG, "Dark mode setup completed");
+    }
+
+    // Background Audio Setup
+    private void setupBackgroundAudio() {
+        mediaSession = new MediaSessionCompat(this, "SngineMediaSession");
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+            @Override
+            public void onPlay() {
+                super.onPlay();
+                // Handle play action
+            }
+
+            @Override
+            public void onPause() {
+                super.onPause();
+                // Handle pause action
+            }
+        });
+        mediaSession.setActive(true);
+        Log.d(TAG, "Background audio setup completed");
+    }
+
+    // Handle In-App Purchase
+    private void handlePurchase(Purchase purchase) {
+        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+            // Grant entitlement to the user
+            Log.d(TAG, "Purchase successful: " + purchase.getOrderId());
+        }
+    }
+
+    // Apply Dark Mode
+    private void applyDarkMode(boolean isDark) {
+        // Implement dark mode logic here
+        // This could involve changing themes or injecting CSS
+        if (isDark) {
+            // Inject CSS for dark mode into WebView
+            String darkModeCSS = "javascript:(function() { " +
+                    "var style = document.createElement('style'); " +
+                    "style.innerHTML = 'body { background-color: #121212 !important; color: #ffffff !important; } " +
+                    "a { color: #bb86fc !important; } " +
+                    "input, textarea, select { background-color: #1e1e1e !important; color: #ffffff !important; border: 1px solid #333 !important; }'; " +
+                    "document.head.appendChild(style); })()";
+            swvp_view.loadUrl(darkModeCSS);
+        } else {
+            // Remove dark mode CSS
+            String removeDarkModeCSS = "javascript:(function() { " +
+                    "var styles = document.querySelectorAll('style'); " +
+                    "for (var i = 0; i < styles.length; i++) { " +
+                    "if (styles[i].innerHTML.includes('background-color: #121212')) { " +
+                    "styles[i].parentNode.removeChild(styles[i]); break; }}})()";
+            swvp_view.loadUrl(removeDarkModeCSS);
+        }
+        Log.d(TAG, "Dark mode applied: " + isDark);
+    }
+
+    // Multi-language Support Implementation
+    private void setupMultiLanguageSupport() {
+        // Get current locale and inject language preference to WebView
+        String currentLanguage = getResources().getConfiguration().locale.getLanguage();
+        String languageScript = "javascript:(function() { " +
+                "localStorage.setItem('appLanguage', '" + currentLanguage + "'); " +
+                "if (window.updateAppLanguage) { window.updateAppLanguage('" + currentLanguage + "'); } " +
+                "})()";
+        swvp_view.loadUrl(languageScript);
+        Log.d(TAG, "Multi-language support setup completed for language: " + currentLanguage);
+    }
+
+    // Change app language
+    public void changeAppLanguage(String languageCode) {
+        Locale locale = new Locale(languageCode);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
+
+        // Handle RTL for supported languages (e.g., Arabic, Hebrew)
+        if (languageCode.equals("ar") || languageCode.equals("he")) {
+            config.setLayoutDirection(locale);
+        }
+
+        // Restart activity to apply language changes
+        Intent intent = getIntent();
+        finish();
+        startActivity(intent);
     }
 }
