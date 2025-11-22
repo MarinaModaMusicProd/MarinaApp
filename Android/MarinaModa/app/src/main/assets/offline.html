@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Mode - Marina</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .features {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            backdrop-filter: blur(10px);
+        }
+        .features h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        .features ul {
+            list-style: none;
+            text-align: left;
+        }
+        .features li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4ade80;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .tips {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📡</div>
+        <h1>You're Offline</h1>
+        <p>It looks like you're not connected to the internet. Don't worry, Marina still has plenty to offer!</p>
+        
+        <div class="features">
+            <h2>Available Offline Features</h2>
+            <ul>
+                <li>Access your downloaded music</li>
+                <li>View your saved playlists</li>
+                <li>Browse cached content</li>
+                <li>Manage your library</li>
+                <li>Access app settings</li>
+            </ul>
+        </div>
+        
+        <a href="refresh:URL" class="button">Try Again</a>
+        <a href="sngine://" class="button">Go to Home</a>
+        
+        <div class="tips">
+            <p>💡 Tip: Download your favorite songs when online to enjoy them offline!</p>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -7,10 +7,14 @@ android {
 		applicationId 'com.domestic.marinamoda'
         minSdk 21
         targetSdk 35
-		versionCode 17
-		versionName '17'
+		versionCode 18
+		versionName '18'
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 		multiDexEnabled true
+	}
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
 	}
 	buildTypes {
 		release {
@@ -51,6 +55,9 @@ dependencies {
 
 	// Media Session for background audio
 	implementation 'androidx.media:media:1.7.0'
+	
+	// DrawerLayout
+	implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
 }
 
 apply plugin: 'com.huawei.agconnect'

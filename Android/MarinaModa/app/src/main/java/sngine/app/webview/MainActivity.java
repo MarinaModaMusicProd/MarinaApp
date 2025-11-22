@@ -55,7 +55,11 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -90,13 +94,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import com.onesignal.OneSignal;
-import com.onesignal.Continue;
-import com.onesignal.notifications.INotificationClickEvent;
-import com.onesignal.notifications.INotificationClickListener;
-import com.onesignal.notifications.INotificationReceivedEvent;
-import com.onesignal.notifications.INotificationWillShowInForegroundHandler;
-import com.onesignal.notifications.INotificationWillShowInForegroundEvent;
-import com.onesignal.notifications.INotificationReceivedHandler;
+import com.onesignal.OSNotification;
+import com.onesignal.OSNotificationOpenedResult;
+import com.onesignal.OSNotificationReceivedEvent;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -167,6 +167,10 @@ public class MainActivity extends AppCompatActivity {
     private BiometricPrompt biometricPrompt;
     private MediaSessionCompat mediaSession;
     private SharedPreferences sharedPreferences;
+    
+    // Navigation drawer
+    private DrawerLayout drawerLayout;
+    private Toolbar toolbar;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -257,47 +261,55 @@ public class MainActivity extends AppCompatActivity {
 
         // OneSignal Initialization
         if(!Objects.equals(Sngine_ONESIGNAL_APP_ID, "")) {
-        OneSignal.initWithContext(this, Sngine_ONESIGNAL_APP_ID);
+            OneSignal.setAppId(Sngine_ONESIGNAL_APP_ID);
+            OneSignal.initWithContext(this);
 
-        // requestPermission will show the native Android notification permission prompt.
-        // NOTE: It's recommended to use a OneSignal In-App Message to prompt instead.
-        OneSignal.getNotifications().requestPermission(false, Continue.none());
-
-        // Get OneSignal user ID
-        oneSignalUserID = OneSignal.getUser().getPushSubscription().getId();
-
-        // Set up notification listeners for enhanced push notifications
-        OneSignal.getNotifications().addClickListener(new INotificationClickListener() {
-            @Override
-            public void onClick(INotificationClickEvent event) {
-                String actionId = event.getResult().getActionId();
-                String url = event.getResult().getUrl();
-                if (url != null && !url.isEmpty()) {
-                    // Handle deep linking
-                    if (url.startsWith("sngine://")) {
-                        url = url.replace("sngine://", Sngine_URL);
+            // Get OneSignal user ID after initialization
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (OneSignal.getDeviceState() != null) {
+                        oneSignalUserID = OneSignal.getDeviceState().getUserId();
                     }
-                    aswm_view(url, false);
                 }
-                Log.d(TAG, "Notification clicked with action: " + actionId);
-            }
-        });
+            }, 1000);
 
-        OneSignal.getNotifications().addNotificationWillShowInForegroundHandler(new INotificationWillShowInForegroundHandler() {
-            @Override
-            public void onWillShowInForeground(INotificationWillShowInForegroundEvent event) {
-                Log.d(TAG, "Notification will display: " + event.getNotification().getTitle());
-                // Custom handling before notification is displayed
-            }
-        });
+            // Set up notification opened handler
+            OneSignal.setNotificationOpenedHandler(new OneSignal.OSNotificationOpenedHandler() {
+                @Override
+                public void notificationOpened(OSNotificationOpenedResult result) {
+                    OSNotification notification = result.getNotification();
+                    if (notification != null) {
+                        String url = null;
+                        // Try to get URL from additional data
+                        if (notification.getAdditionalData() != null) {
+                            url = notification.getAdditionalData().optString("url", null);
+                        }
+                        
+                        if (url != null && !url.isEmpty()) {
+                            // Handle deep linking
+                            if (url.startsWith("sngine://")) {
+                                url = url.replace("sngine://", Sngine_URL);
+                            }
+                            aswm_view(url, false);
+                        }
+                        Log.d(TAG, "Notification opened: " + notification.getTitle());
+                    }
+                }
+            });
 
-        OneSignal.getNotifications().addNotificationReceivedHandler(new INotificationReceivedHandler() {
-            @Override
-            public void onNotificationReceived(INotificationReceivedEvent event) {
-                Log.d(TAG, "Notification received: " + event.getNotification().getTitle());
-                // Custom handling for received notifications
-            }
-        });
+            // Set up notification received handler
+            OneSignal.setNotificationWillShowInForegroundHandler(new OneSignal.OSNotificationWillShowInForegroundHandler() {
+                @Override
+                public void notificationWillShowInForeground(OSNotificationReceivedEvent event) {
+                    OSNotification notification = event.getNotification();
+                    if (notification != null) {
+                        Log.d(TAG, "Notification will display: " + notification.getTitle());
+                        // Complete the notification display
+                        event.complete(notification);
+                    }
+                }
+            });
         }
 
         Intent intent = getIntent();
@@ -311,6 +323,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_main);
+        
+        // Setup toolbar and navigation drawer
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeAsUpIndicator(android.R.drawable.ic_menu_more);
+        }
+        
+        drawerLayout = findViewById(R.id.drawer_layout);
+        setupNavigationDrawer();
+        
         swvp_view = findViewById(R.id.msw_view);
         swvp_view.getSettings().setJavaScriptEnabled(true);
 
@@ -592,8 +616,12 @@ public class MainActivity extends AppCompatActivity {
         //For android below API 23
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            Toast.makeText(getApplicationContext(), getString(R.string.went_wrong), Toast.LENGTH_SHORT).show();
-            aswm_view("file:///android_asset/error.html", false);
+            if (!DetectConnection.isInternetAvailable(MainActivity.this)) {
+                aswm_view("file:///android_asset/offline.html", false);
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.went_wrong), Toast.LENGTH_SHORT).show();
+                aswm_view("file:///android_asset/error.html", false);
+            }
         }
 
         //Overriding webview URLs
@@ -649,7 +677,8 @@ public class MainActivity extends AppCompatActivity {
         //Show toast error if not connected to the network
         if (!SngineApp_OFFLINE && !DetectConnection.isInternetAvailable(MainActivity.this)) {
             Toast.makeText(getApplicationContext(), getString(R.string.check_connection), Toast.LENGTH_SHORT).show();
-
+            aswm_view("file:///android_asset/offline.html", false);
+            return true;
         } else if (url.startsWith("sngine:")) {
             // Replace custom scheme with actual URL
             String newUrl = url.replace("sngine://", "https://");
@@ -901,6 +930,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, @NonNull KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(findViewById(R.id.nav_drawer))) {
+                    drawerLayout.closeDrawers();
+                    return true;
+                }
                 if (swvp_view.canGoBack()) {
                     swvp_view.goBack();
                 } else {
@@ -1098,5 +1131,102 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();
         finish();
         startActivity(intent);
+    }
+    
+    // Setup Navigation Drawer
+    private void setupNavigationDrawer() {
+        TextView navHome = findViewById(R.id.nav_home);
+        TextView navSettings = findViewById(R.id.nav_settings);
+        TextView navAbout = findViewById(R.id.nav_about);
+        TextView navHelp = findViewById(R.id.nav_help);
+        TextView navShare = findViewById(R.id.nav_share);
+        TextView navRate = findViewById(R.id.nav_rate);
+        
+        navHome.setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            aswm_view(Sngine_URL, false);
+        });
+        
+        navSettings.setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+        });
+        
+        navAbout.setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            startActivity(new Intent(MainActivity.this, AboutActivity.class));
+        });
+        
+        navHelp.setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            startActivity(new Intent(MainActivity.this, HelpActivity.class));
+        });
+        
+        navShare.setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
+            intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.app_name) + "\n" + 
+                "https://play.google.com/store/apps/details?id=" + getPackageName());
+            startActivity(Intent.createChooser(intent, getString(R.string.share_w_friends)));
+        });
+        
+        navRate.setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            final String app_package = getPackageName();
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + app_package)));
+            } catch (ActivityNotFoundException anfe) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + app_package)));
+            }
+        });
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        
+        if (id == android.R.id.home) {
+            if (drawerLayout.isDrawerOpen(findViewById(R.id.nav_drawer))) {
+                drawerLayout.closeDrawers();
+            } else {
+                drawerLayout.openDrawer(findViewById(R.id.nav_drawer));
+            }
+            return true;
+        } else if (id == R.id.menu_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        } else if (id == R.id.menu_about) {
+            startActivity(new Intent(this, AboutActivity.class));
+            return true;
+        } else if (id == R.id.menu_help) {
+            startActivity(new Intent(this, HelpActivity.class));
+            return true;
+        } else if (id == R.id.menu_share) {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
+            intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.app_name) + "\n" + 
+                "https://play.google.com/store/apps/details?id=" + getPackageName());
+            startActivity(Intent.createChooser(intent, getString(R.string.share_w_friends)));
+            return true;
+        } else if (id == R.id.menu_rate) {
+            final String app_package = getPackageName();
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + app_package)));
+            } catch (ActivityNotFoundException anfe) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + app_package)));
+            }
+            return true;
+        }
+        
+        return super.onOptionsItemSelected(item);
     }
 }

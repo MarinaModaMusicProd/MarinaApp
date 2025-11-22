@@ -19,4 +19,43 @@
 	<string name="went_wrong">Something Went Wrong!</string>
 	<string name="check_connection">Please check your Network Connection!</string>
 	<string name="share_w_friends">Share with your Friends</string>
+	
+	<!-- Settings -->
+	<string name="settings_title">Settings</string>
+	<string name="settings_general">General</string>
+	<string name="settings_privacy">Privacy &amp; Security</string>
+	<string name="settings_dark_mode">Dark Mode</string>
+	<string name="settings_dark_mode_desc">Enable dark theme for better viewing in low light</string>
+	<string name="settings_notifications">Notifications</string>
+	<string name="settings_notifications_desc">Receive push notifications and updates</string>
+	<string name="settings_auto_refresh">Auto Refresh</string>
+	<string name="settings_auto_refresh_desc">Automatically refresh content when available</string>
+	<string name="settings_location">Location Services</string>
+	<string name="settings_location_desc">Allow app to access your location</string>
+	<string name="settings_biometric">Biometric Authentication</string>
+	<string name="settings_biometric_desc">Use fingerprint or face unlock for security</string>
+	
+	<!-- About -->
+	<string name="about_title">About</string>
+	<string name="version_label">Version</string>
+	<string name="about_description">Marina is a modern music streaming application that provides you with access to a vast library of music, playlists, and personalized recommendations. Enjoy your favorite tracks anytime, anywhere.</string>
+	<string name="features_title">Features</string>
+	<string name="about_features">• Stream unlimited music\n• Create and manage playlists\n• Discover new artists and songs\n• Offline listening support\n• High-quality audio streaming\n• Personalized recommendations\n• Dark mode for comfortable viewing\n• Secure biometric authentication</string>
+	
+	<!-- Help -->
+	<string name="help_title">Help &amp; Support</string>
+	<string name="help_content_text">Welcome to Marina!\n\nGetting Started:\n1. Browse the music library to discover new songs\n2. Create playlists by adding your favorite tracks\n3. Use the search function to find specific artists or songs\n4. Enable offline mode to download music for offline listening\n\nFeatures:\n• Streaming: Stream music directly from our library\n• Playlists: Create and manage your personal playlists\n• Search: Find songs, artists, and albums quickly\n• Offline Mode: Download music to listen without internet\n• Settings: Customize your experience in the Settings menu\n\nTroubleshooting:\n• If music doesn\'t play, check your internet connection\n• Clear app cache if you experience performance issues\n• Make sure you have sufficient storage for offline downloads\n• Restart the app if you encounter any errors\n\nFor more assistance, please contact our support team through the app settings.</string>
+	
+	<!-- Menu -->
+	<string name="menu_home">Home</string>
+	<string name="menu_settings">Settings</string>
+	<string name="menu_about">About</string>
+	<string name="menu_help">Help</string>
+	<string name="menu_share">Share App</string>
+	<string name="menu_rate">Rate App</string>
+	
+	<!-- Welcome Screen -->
+	<string name="welcome_title">Welcome to Marina</string>
+	<string name="welcome_description">Your ultimate music streaming experience. Discover, listen, and enjoy millions of songs at your fingertips.</string>
+	<string name="get_started">Get Started</string>
 </resources>

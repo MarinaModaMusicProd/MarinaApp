@@ -2,7 +2,23 @@
 	android:id="@+id/pullfresh"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	xmlns:android="http://schemas.android.com/apk/res/android">
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+<androidx.drawerlayout.widget.DrawerLayout
+	android:id="@+id/drawer_layout"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+<LinearLayout
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+<androidx.appcompat.widget.Toolbar
+	android:id="@+id/toolbar"
+	android:layout_width="match_parent"
+	android:layout_height="?attr/actionBarSize"
+	android:background="@color/colorPrimary"
+	android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+	app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 <RelativeLayout
 	android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -80,4 +96,104 @@
         android:layout_alignParentStart="true"
         android:visibility="visible" />
 </RelativeLayout>
+</LinearLayout>
+<LinearLayout
+	android:id="@+id/nav_drawer"
+	android:layout_width="280dp"
+	android:layout_height="match_parent"
+	android:layout_gravity="start"
+	android:background="@color/white"
+	android:orientation="vertical"
+	android:paddingTop="16dp">
+	<TextView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/app_name"
+		android:textSize="20sp"
+		android:textStyle="bold"
+		android:textColor="@color/colorPrimary"
+		android:padding="16dp" />
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="1dp"
+		android:background="#E0E0E0" />
+	<TextView
+		android:id="@+id/nav_home"
+		android:layout_width="match_parent"
+		android:layout_height="48dp"
+		android:text="@string/menu_home"
+		android:textSize="16sp"
+		android:textColor="#212121"
+		android:padding="16dp"
+		android:gravity="center_vertical"
+		android:background="?android:attr/selectableItemBackground"
+		android:clickable="true"
+		android:focusable="true" />
+	<TextView
+		android:id="@+id/nav_settings"
+		android:layout_width="match_parent"
+		android:layout_height="48dp"
+		android:text="@string/menu_settings"
+		android:textSize="16sp"
+		android:textColor="#212121"
+		android:padding="16dp"
+		android:gravity="center_vertical"
+		android:background="?android:attr/selectableItemBackground"
+		android:clickable="true"
+		android:focusable="true" />
+	<TextView
+		android:id="@+id/nav_about"
+		android:layout_width="match_parent"
+		android:layout_height="48dp"
+		android:text="@string/menu_about"
+		android:textSize="16sp"
+		android:textColor="#212121"
+		android:padding="16dp"
+		android:gravity="center_vertical"
+		android:background="?android:attr/selectableItemBackground"
+		android:clickable="true"
+		android:focusable="true" />
+	<TextView
+		android:id="@+id/nav_help"
+		android:layout_width="match_parent"
+		android:layout_height="48dp"
+		android:text="@string/menu_help"
+		android:textSize="16sp"
+		android:textColor="#212121"
+		android:padding="16dp"
+		android:gravity="center_vertical"
+		android:background="?android:attr/selectableItemBackground"
+		android:clickable="true"
+		android:focusable="true" />
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="1dp"
+		android:background="#E0E0E0"
+		android:layout_marginTop="8dp" />
+	<TextView
+		android:id="@+id/nav_share"
+		android:layout_width="match_parent"
+		android:layout_height="48dp"
+		android:text="@string/menu_share"
+		android:textSize="16sp"
+		android:textColor="#212121"
+		android:padding="16dp"
+		android:gravity="center_vertical"
+		android:background="?android:attr/selectableItemBackground"
+		android:clickable="true"
+		android:focusable="true" />
+	<TextView
+		android:id="@+id/nav_rate"
+		android:layout_width="match_parent"
+		android:layout_height="48dp"
+		android:text="@string/menu_rate"
+		android:textSize="16sp"
+		android:textColor="#212121"
+		android:padding="16dp"
+		android:gravity="center_vertical"
+		android:background="?android:attr/selectableItemBackground"
+		android:clickable="true"
+		android:focusable="true" />
+</LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
